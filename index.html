@@ -48,14 +48,22 @@
         <p id="headerText" class="text-sub"><i class="fas fa-info-circle"></i> Convert your JSON data into a readable HTML table.</p>
     </header>
     
-    <div class="d-flex justify-content-center mt-3 flex-wrap">
-        <button id="download_csv" class="btn btn-primary m-2 py-2 px-4">
-            <i class="fas fa-file-csv fa-lg"></i> Download CSV
-        </button>
-        <button id="show_html" class="btn btn-success m-2 py-2 px-4" data-bs-toggle="modal" data-bs-target="#htmlModal">
-            <i class="fas fa-code fa-lg"></i> Show HTML
-        </button>
-    </div>
+<!-- Botones para exportar -->
+<div class="d-flex justify-content-center mt-3 flex-wrap">
+    <button id="download_csv" class="btn btn-primary m-2 py-2 px-4">
+        <i class="fas fa-file-csv fa-lg"></i> Download CSV
+    </button>
+    <button id="download_xlsx" class="btn btn-info m-2 py-2 px-4">
+        <i class="fas fa-file-excel fa-lg"></i> Download Excel
+    </button>
+    <button id="generate_sql" class="btn btn-warning m-2 py-2 px-4">
+        <i class="fas fa-database fa-lg"></i> Generate SQL
+    </button>
+    <button id="show_html" class="btn btn-success m-2 py-2 px-4" data-bs-toggle="modal" data-bs-target="#htmlModal">
+        <i class="fas fa-code fa-lg"></i> Show HTML
+    </button>
+</div>
+    
     
     <!-- Modal -->
     <div class="modal fade" id="htmlModal" tabindex="-1" aria-labelledby="htmlModalLabel" aria-hidden="true">
@@ -74,6 +82,25 @@
             </div>
         </div>
     </div>
+
+    <!-- SQL Result Modal -->
+<div class="modal fade" id="sqlModal" tabindex="-1" aria-labelledby="sqlModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="sqlModalLabel">Generated SQL Query</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <pre id="sqlOutput" class="bg-light p-3 border rounded" style="white-space: pre-wrap;"></pre>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
     
     <main id="main-content" class="px-2">
         <div class="row g-3">
@@ -116,8 +143,58 @@
     </div>
 </footer>
 
+<!-- Scripts for Export Functionality -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.3.2/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
+
+
 
     <script>
+
+        document.getElementById('download_xlsx').addEventListener('click', function() {
+            var data = document.getElementById('json_result').querySelector('table');
+            if (data) {
+                var wb = XLSX.utils.table_to_book(data);
+                XLSX.writeFile(wb, 'data.xlsx');
+            } else {
+                alert('No data to download');
+            }
+        });
+    
+       
+        
+        document.getElementById('generate_sql').addEventListener('click', function() {
+            try {
+                var data = JSON.parse(document.getElementById('json_input').value);
+                
+                if (!Array.isArray(data) || data.some(item => typeof item !== 'object' || Array.isArray(item))) {
+                    throw new Error("Please provide a JSON array of objects.");
+                }
+                
+                var tableName = "your_table_name"; // Customize as needed
+                var sql = `INSERT INTO ${tableName} `;
+                var keys = Object.keys(data[0]);
+                sql += `(${keys.join(', ')}) VALUES \n`;
+                data.forEach((row, index) => {
+                    var values = keys.map(key => `'${JSON.stringify(row[key]).slice(1, -1)}'`);
+                    sql += `(${values.join(', ')})`;
+                    if (index < data.length - 1) sql += ',\n';
+                });
+                sql += ';';
+                
+                // Actualizar y mostrar el modal
+                document.getElementById('sqlOutput').textContent = sql;
+                var sqlModal = new bootstrap.Modal(document.getElementById('sqlModal'));
+                sqlModal.show();
+            } catch (e) {
+                console.error("Error parsing JSON: ", e.message);
+                alert("Error parsing JSON: " + e.message);
+            }
+        });
+        
+        
+
         document.getElementById('download_csv').addEventListener('click', function() {
             var data = document.getElementById('json_result').querySelector('table');
             if (!data) {
