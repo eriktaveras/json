@@ -16,7 +16,7 @@ Welcome to the JSON to HTML Converter, a web tool that helps you convert JSON da
 To get started with this application, clone the repository to your local machine:
 
 ```bash
-git clone https://github.com/yourgithubusername/json-to-html-converter.git
+git clone https://github.com/eriktaveras/json-to-html-converter.git
 ```
 
 Navigate to the project directory:
