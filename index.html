@@ -32,6 +32,37 @@
         .dark-mode .table-dark thead th { border-color: #424242; }
         .dark-mode .table-dark thead th { border-color: #424242; }
         .dark-mode .text-sub { color: #b0bec5; }
+        body.dark-mode .modal-content {
+            background-color: #232323;
+            color: #e0e0e0;
+        }
+        
+        body.dark-mode .modal-header {
+            border-bottom: 1px solid #444;
+        }
+        
+        body.dark-mode .modal-footer {
+            border-top: 1px solid #444;
+        }
+        
+        body.dark-mode .bg-light {
+            background-color: #232323 !important;
+        }
+        
+        body.dark-mode .border {
+            border-color: #444 !important;
+        }
+        
+        body.dark-mode .btn-secondary {
+            background-color: #333;
+            border-color: #444;
+            color: #e0e0e0;
+        }
+        
+        body.dark-mode .btn-secondary:hover {
+            background-color: #444;
+            color: #fff;
+        }
 
     </style>
 </head>
@@ -246,7 +277,11 @@
         
         document.getElementById('show_html').addEventListener('click', function() {
             var html = document.getElementById('json_result').innerHTML;
-            document.getElementById('html_preview').textContent = html;
+            var pre = document.createElement('pre');
+            pre.textContent = html;
+            var htmlPreview = document.getElementById('html_preview');
+            htmlPreview.innerHTML = '';
+            htmlPreview.appendChild(pre);
         });
     </script>
     <script>
@@ -259,51 +294,62 @@
         });
     </script>
     <script>
-        document.getElementById('convert_button').onclick = function() {
-            var input = document.getElementById('json_input').value;
+        document.getElementById('convert_button').addEventListener('click', function() {
+            const input = document.getElementById('json_input').value;
+            let data;
+        
             try {
-                var data = JSON.parse(input);
-                
-                // Determine if data is an object with a single list as its value, a list, or another type
-                var valuesList = [];
-                if (typeof data === 'object' && !Array.isArray(data)) {
-                    if (Object.keys(data).length === 1 && Array.isArray(Object.values(data)[0])) {
-                        valuesList = Object.values(data)[0];
-                    } else {
-                        valuesList = [data];
-                    }
-                } else if (Array.isArray(data)) {
-                    valuesList = data;
-                }
-
-                // Generate table if data is in a list format
-                if (valuesList.length) {
-                    var keys = Object.keys(valuesList[0]);
-                    var resultTable = '<table class="table table-bordered"><thead class="table-dark"><tr>';
-                    
-                    // Header row
-                    keys.forEach(function(key) {
-                        resultTable += '<th>' + key + '</th>';
-                    });
-                    resultTable += '</tr></thead><tbody>';
-
-                    // Data rows
-                    valuesList.forEach(function(item) {
-                        resultTable += '<tr>';
-                        keys.forEach(function(key) {
-                            resultTable += '<td>' + item[key] + '</td>';
-                        });
-                        resultTable += '</tr>';
-                    });
-                    resultTable += '</tbody></table>';
-                    document.getElementById('json_result').innerHTML = resultTable;
-                } else {
-                    document.getElementById('json_result').innerHTML = '<p>Cannot display data as a table.</p>';
-                }
+                data = JSON.parse(input);
             } catch(e) {
-                document.getElementById('json_result').innerHTML = '<p>Invalid JSON: ' + e + '</p>';
+                document.getElementById('json_result').innerHTML = `<p>Invalid JSON: ${e}</p>`;
+                return;
             }
-        };
+        
+            let valuesList = getValuesList(data);
+        
+            if (valuesList.length) {
+                const keys = Object.keys(valuesList[0]);
+                const resultTable = generateTable(keys, valuesList);
+                document.getElementById('json_result').innerHTML = resultTable;
+            } else {
+                document.getElementById('json_result').innerHTML = '<p>Cannot display data as a table.</p>';
+            }
+        });
+        
+        function getValuesList(data) {
+            if (typeof data === 'object' && !Array.isArray(data)) {
+                if (Object.keys(data).length === 1 && Array.isArray(Object.values(data)[0])) {
+                    return Object.values(data)[0];
+                } else {
+                    return [data];
+                }
+            } else if (Array.isArray(data)) {
+                return data;
+            } else {
+                return [];
+            }
+        }
+        
+        function generateTable(keys, valuesList) {
+            let table = '<table class="table table-bordered"><thead class="table-dark"><tr>';
+        
+            keys.forEach(key => {
+                table += `<th>${key}</th>`;
+            });
+            table += '</tr></thead><tbody>';
+        
+            valuesList.forEach(item => {
+                table += '<tr>';
+                keys.forEach(key => {
+                    table += `<td>${item[key]}</td>`;
+                });
+                table += '</tr>';
+            });
+        
+            table += '</tbody></table>';
+        
+            return table;
+        }
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
