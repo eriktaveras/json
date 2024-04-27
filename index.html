@@ -90,9 +90,13 @@
     <button id="generate_sql" class="btn btn-warning m-2 py-2 px-4">
         <i class="fas fa-database fa-lg"></i> Generate SQL
     </button>
-    <button id="show_html" class="btn btn-success m-2 py-2 px-4" data-bs-toggle="modal" data-bs-target="#htmlModal">
-        <i class="fas fa-code fa-lg"></i> Show HTML
+    <button id="copy_html" class="btn btn-success m-2 py-2 px-4">
+        <i class="fas fa-copy fa-lg"></i> Copy HTML
     </button>
+    
+    <script>
+    
+    </script>
 </div>
     
     
@@ -275,14 +279,7 @@
             downloadLink.click();
         }
         
-        document.getElementById('show_html').addEventListener('click', function() {
-            var html = document.getElementById('json_result').innerHTML;
-            var pre = document.createElement('pre');
-            pre.textContent = html;
-            var htmlPreview = document.getElementById('html_preview');
-            htmlPreview.innerHTML = '';
-            htmlPreview.appendChild(pre);
-        });
+
     </script>
     <script>
         document.getElementById('darkModeSwitch').addEventListener('click', function() {
@@ -350,6 +347,19 @@
         
             return table;
         }
+
+        document.getElementById('copy_html').addEventListener('click', function() {
+            const html = document.getElementById('json_result').innerHTML;
+            const copyButton = document.getElementById('copy_html');
+            navigator.clipboard.writeText(html).then(function() {
+                copyButton.textContent = 'Copied!';
+                setTimeout(function() {
+                    copyButton.textContent = 'Copy HTML';
+                }, 2000);
+            }, function(err) {
+                console.error('Could not copy text: ', err);
+            });
+        });
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
